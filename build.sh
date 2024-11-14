@@ -82,13 +82,12 @@ function create_asahi_install_images() {
     
     log "Setting pre-defined uuid (${EFI_UUID}) for efi vfat partition in /etc/fstab"
     sed -i "s/EFI_UUID/${EFI_UUID}/" "${MOUNTPOINT_DIR}"/etc/fstab
-    log "Setting uuid (${BOOT_UUID}) for boot partition in /etc/fstab"
+
+    log "Setting uuid (${BOOT_UUID}) for ext2 boot partition in /etc/fstab"
     sed -i "s/BOOT_UUID/${BOOT_UUID}/" "${MOUNTPOINT_DIR}"/etc/fstab
+    
     log "Setting uuid (${ROOT_UUID}) for ext4 partition in /etc/fstab"
     sed -i "s/ROOT_UUID/${ROOT_UUID}/" "${MOUNTPOINT_DIR}"/etc/fstab
-
-    #log "Deleting etc/resolv.conf"
-    #rm -f "${MOUNTPOINT_DIR}"/etc/resolv.conf
 
     arch-chroot "${MOUNTPOINT_DIR}" grub-editenv create
     
@@ -106,6 +105,8 @@ rsync -aHAX "${MOUNTPOINT_DIR}"/efi/ "${ASAHI_INSTALL_IMAGES_DIR}"/esp/
 rsync -aHAX "${MOUNTPOINT_DIR}"/boot/efi/ "${ASAHI_INSTALL_IMAGES_DIR}"/esp/
 
 cd "${ASAHI_INSTALL_IMAGES_DIR}" || exit 1
+
+echo "${EFI_UUID}" > "${PROJECT_DIR}"/efi.uuid
 
 log "Compressing ..."
 zip -r9 "${PROJECT_DIR}"/debian-12-base.zip .

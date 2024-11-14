@@ -60,6 +60,9 @@ EOF
 log "Setting hostname"
 echo "asahi-debian" > /etc/hostname
 
-log "Creating 'asahi-user' user and setting new password"
-useradd -m -s /bin/bash asahi-user 
-passwd asahi-user
+log "Changing 'root' user password"
+passwd root
+
+log "Creating 'asahi' user and setting new password"
+useradd -m -s /bin/bash asahi 
+passwd asahi

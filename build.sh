@@ -22,8 +22,8 @@ function log() {
 }
 
 function unmount_images() {
-    [[ -n "$(findmnt -n "${MOUNTPOINT_DIR}"/boot/efi)" ]] && umount -Rf "${MOUNTPOINT_DIR}"/boot/efi && log "Unmounted ${MOUNTPOINT_DIR}/boot/efi"
-    [[ -n "$(findmnt -n "${MOUNTPOINT_DIR}"/boot/)" ]] && umount -Rf "${MOUNTPOINT_DIR}"/boot && log "Unmounted ${MOUNTPOINT_DIR}/boot"
+    [[ -n "$(findmnt -n "${MOUNTPOINT_DIR}"/efi)" ]] && umount -Rf "${MOUNTPOINT_DIR}"/efi && log "Unmounted ${MOUNTPOINT_DIR}/efi"
+    [[ -n "$(findmnt -n "${MOUNTPOINT_DIR}"/boot)" ]] && umount -Rf "${MOUNTPOINT_DIR}"/boot && log "Unmounted ${MOUNTPOINT_DIR}/boot"
     [[ -n "$(findmnt -n "${MOUNTPOINT_DIR}")" ]] && umount -Rf "${MOUNTPOINT_DIR}" && log "Unmounted ${MOUNTPOINT_DIR}"
 }
 
@@ -108,6 +108,9 @@ cd "${ASAHI_INSTALL_IMAGES_DIR}" || exit 1
 
 echo "${EFI_UUID}" > "${PROJECT_DIR}"/efi.uuid
 
-log "Compressing ..."
-zip -r9 "${PROJECT_DIR}"/debian-12-base.zip .
+#log "Compressing boot.img root.img and esp/ ..."
+#zip -r9 "${PROJECT_DIR}"/debian-12-base.zip .
+
+#log "Unmounting umages ..."
+#unmount_images
 

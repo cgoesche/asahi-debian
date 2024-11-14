@@ -36,6 +36,7 @@ clang-15 \
 flex \
 bison \
 libclang-dev \
+arch-install-scripts \
 curl \
 bubblewrap \
 mkosi \ )

@@ -3,6 +3,11 @@
 BOOT_UUID=${1}
 ROOT_UUID=${2}
 
+HOSTNAME="asahi-debian"
+DEFAULT_USER="asahi"
+TIMEZONE="America/Montreal"
+
+
 function log() {
 	# In this case we are not passing command line arguments to 'echo'
 	# but instead an output string 
@@ -57,12 +62,24 @@ initrd /${INITRD}
 boot
 EOF
 
-log "Setting hostname"
-echo "asahi-debian" > /etc/hostname
+log "Setting hostname to '${HOSTNAME}'"
+echo "${HOSTNAME}" > /etc/hostname
 
-log "Changing 'root' user password"
+log "Setting default timezone to '${TIMEZONE}'"
+echo "${TIMEZONE}" > /etc/timezone
+
+log "Enabling and configuring NetworkManager"
+systemctl enable NetworkManager.service
+systemctl disable NetworkManager-wait-online.service
+systemctl mask NetworkManager-wait-online.service
+
+log "Please set a new password for user 'root'"
 passwd root
 
-log "Creating 'asahi' user and setting new password"
+log "Creating user '${DEFAULT_USER}' and setting new password"
 useradd -m -s /bin/bash asahi 
 passwd asahi
+
+log "Adding '${DEFAULT_USER}' to 'sudo' group"
+usermod -aG sudo "${DEFAULT_USER}"
+

@@ -10,6 +10,7 @@ MOUNTPOINT_DIR="${PROJECT_DIR}/mnt"
 ASAHI_INSTALL_IMAGES_DIR="${PROJECT_DIR}/asahi.install.images"
 
 EFI_UUID=$(uuidgen | tr '[a-z]' '[A-Z]' | cut -c1-8 | fold -w4 | paste -sd '-')
+EFI_UUID_HEX=$(printf "0x%s" "$(echo "${EFI_UUID}" | tr '[A-Z]' '[a-z]' | tr -d '-')")
 ROOT_UUID=$(uuidgen)
 BOOT_UUID=$(uuidgen)
 
@@ -24,9 +25,9 @@ function clean_up() {
     unmount_images
     rm -rf "${PROJECT_DIR}"/mkosi.cache/*
     rm -rf "${PROJECT_DIR}"/mkosi.output/*
-    rm -rf "${PROJECT_DIR}"/mnt/
+    rm -rf "${PROJECT_DIR:?}"/mnt/
 }
-trap "clean_up" EXIT SIGTERM SIGKILL SIGHUP
+trap "clean_up" EXIT SIGTERM SIGHUP
 
 function unmount_images() {
     [[ -n "$(findmnt -n "${MOUNTPOINT_DIR}"/efi)" ]] && umount -Rf "${MOUNTPOINT_DIR}"/efi && log "Unmounted ${MOUNTPOINT_DIR}/efi"
@@ -93,9 +94,9 @@ function create_asahi_install_images() {
     arch-chroot "${MOUNTPOINT_DIR}" grub-editenv create
     
     sed -i "s/ROOT_UUID/${ROOT_UUID}/" "${MOUNTPOINT_DIR}"/etc/kernel/cmdline
-    log "Installing GRUB"
+    log "Installing GRUB on target"
     arch-chroot "${MOUNTPOINT_DIR}" grub-install --target=arm64-efi --efi-directory=/efi
-    log "Running post-install script"
+    log "Chrooting into ${MOUNTPOINT_DIR} and executing post-install.sh"
     arch-chroot "${MOUNTPOINT_DIR}" ./post-install.sh "${BOOT_UUID}" "${ROOT_UUID}"
 }
 
@@ -114,7 +115,11 @@ cd "${ASAHI_INSTALL_IMAGES_DIR}" || exit 1
 log "Storing EFI UUID in ${PROJECT_DIR}/efi.uuid"
 echo "${EFI_UUID}" > "${PROJECT_DIR}"/efi.uuid
 
+log "Setting EFI system partition 'volume_id' to ${EFI_UUID_HEX} in installer_data.json"
+sed -i "s/\"volume_id\": \".*\"/\"volume_id\": \"${EFI_UUID_HEX}\"/" "${PROJECT_DIR}"/installer_data.json
+
+log "Unmounting file systems"
+unmount_images
+
 log "Compressing boot.img root.img and esp/ ..."
 zip -r9 "${PROJECT_DIR}"/debian-12-base.zip .
-
-

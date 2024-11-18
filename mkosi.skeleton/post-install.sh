@@ -7,7 +7,6 @@ HOSTNAME="asahi-debian"
 DEFAULT_USER="asahi"
 TIMEZONE="America/Montreal"
 
-
 function log() {
 	# In this case we are not passing command line arguments to 'echo'
 	# but instead an output string 
